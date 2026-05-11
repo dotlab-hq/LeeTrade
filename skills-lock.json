@@ -13,6 +13,12 @@
       "skillPath": "security/SKILL.md",
       "computedHash": "ed38caef4b297cc399d717258d6ea4e6ecb8894c453c83450064c7e7c6e5cc02"
     },
+    "d3k": {
+      "source": "vercel-labs/dev3000",
+      "sourceType": "github",
+      "skillPath": "skills/d3k/SKILL.md",
+      "computedHash": "be4d2b71311ca2adee1c253f052856d57c85ac8ca0056822c37915a5fa37ee35"
+    },
     "email-and-password-best-practices": {
       "source": "better-auth/skills",
       "sourceType": "github",

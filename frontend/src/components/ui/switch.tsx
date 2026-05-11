@@ -1,15 +1,15 @@
 import * as React from "react"
 import { Switch as SwitchPrimitive } from "radix-ui"
 
-import { cn } from "#/lib/utils.ts"
+import { cn } from "@/lib/utils.ts"
 
-function Switch({
+function Switch( {
   className,
   size = "default",
   ...props
 }: React.ComponentProps<typeof SwitchPrimitive.Root> & {
   size?: "sm" | "default"
-}) {
+} ) {
   return (
     <SwitchPrimitive.Root
       data-slot="switch"
