@@ -26,4 +26,4 @@ and this should be wrapped in tanstack query/mutation
 - Use Hono for building the backend server.
 - Ensure that your API endpoints are well-structured and follow RESTful principles.
 - For database interactions, use drizzle as the ORM to manage your database schema and queries efficiently.
-- database we awill use is sqlite for simplicity and ease of use in development.
+- database we will use is PostgreSQL for the backend. The frontend communicates with the backend at http://localhost:8000.

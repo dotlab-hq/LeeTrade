@@ -3,11 +3,15 @@ import { submissions } from '@/lib/mock-data.ts'
 import { PageHeader, Breadcrumb } from '@/components/ui/page-header.tsx'
 import { Button } from '@/components/ui/button.tsx'
 import { useUiStore } from '@/stores/ui-store.ts'
+import { requireRole } from '#/lib/route-guards'
 
-export const Route = createFileRoute('/app/admin/moderation/')({ component: ModerationHistory })
+export const Route = createFileRoute( '/app/admin/moderation/' )( {
+  beforeLoad: () => requireRole( ['admin'] ),
+  component: ModerationHistory,
+} )
 
 function ModerationHistory() {
-  const pushDummyToast = useUiStore((s) => s.pushDummyToast)
+  const pushDummyToast = useUiStore( ( s ) => s.pushDummyToast )
 
   return (
     <div>
@@ -15,7 +19,7 @@ function ModerationHistory() {
       <PageHeader title="Moderation History" description="Record of invalidations and actions taken." />
 
       <div className="rounded-lg border border-hairline overflow-hidden">
-        {submissions.filter((s) => s.status === 'Failed').map((s) => (
+        {submissions.filter( ( s ) => s.status === 'Failed' ).map( ( s ) => (
           <div key={s.id} className="flex items-center justify-between px-4 py-3 border-b border-hairline last:border-0 hover:bg-surface-elevated transition-colors">
             <div>
               <div className="flex items-center gap-2">
@@ -29,7 +33,7 @@ function ModerationHistory() {
               <Link to="/app/submissions/$submissionId" params={{ submissionId: s.id }}>Review</Link>
             </Button>
           </div>
-        ))}
+        ) )}
       </div>
     </div>
   )

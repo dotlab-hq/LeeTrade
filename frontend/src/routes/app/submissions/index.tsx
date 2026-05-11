@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useMemo } from 'react'
-import { submissions, submissionStatusColors } from '@/lib/mock-data.ts'
+import { submissionStatusColors } from '@/lib/mock-data.ts'
+import { useSubmissions } from '@/hooks/api/submissions'
 import { PageHeader } from '@/components/ui/page-header.tsx'
 import { DataTable } from '@/components/ui/table.tsx'
 import { Button } from '@/components/ui/button.tsx'
@@ -8,7 +9,7 @@ import { createColumnHelper } from '@tanstack/react-table'
 
 export const Route = createFileRoute('/app/submissions/')({ component: SubmissionList })
 
-const columnHelper = createColumnHelper<typeof submissions[number]>()
+const columnHelper = createColumnHelper<any>()
 
 const columns = [
   columnHelper.accessor('id', { header: 'ID', cell: (info) => <span className="font-mono text-xs text-mute">{info.getValue()}</span> }),
@@ -34,7 +35,9 @@ const columns = [
 ]
 
 function SubmissionList() {
-  const data = useMemo(() => submissions, [])
+  const { data: submissions = [], isLoading } = useSubmissions()
+
+  const data = useMemo(() => submissions, [submissions])
 
   return (
     <div>
@@ -47,7 +50,13 @@ function SubmissionList() {
           </Button>
         }
       />
-      <DataTable columns={columns} data={data} pageSize={10} />
+      {isLoading ? (
+        <div className="bg-surface border border-hairline rounded-lg p-12 text-center">
+          <p className="text-mute">Loading submissions...</p>
+        </div>
+      ) : (
+        <DataTable columns={columns} data={data} pageSize={10} />
+      )}
     </div>
   )
 }

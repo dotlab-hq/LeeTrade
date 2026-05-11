@@ -1,53 +1,65 @@
 import { create } from 'zustand'
+import { useMe } from '#/hooks/api'
 
 interface User {
   id: string
   email: string
   name: string
-  role: 'contestant' | 'organizer' | 'judge' | 'viewer'
+  role: 'admin' | 'organizer' | 'judge' | 'contestant' | 'viewer'
 }
 
 interface AuthState {
   user: User | null
   isAuthenticated: boolean
-  login: (email: string, password: string) => void
-  signup: (email: string, password: string, name: string) => void
-  logout: () => void
+  isLoading: boolean
+  setUser: (user: User | null) => void
   setRole: (role: User['role']) => void
+  logout: () => void
+  initAuth: () => Promise<void>
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
+export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   isAuthenticated: false,
+  isLoading: true,
 
-  login: (email: string, password: string) => {
-    // Mock login - creates a user session
-    const mockUser: User = {
-      id: `user-${Math.random().toString(36).substr(2, 9)}`,
-      email,
-      name: email.split('@')[0],
-      role: 'contestant',
-    }
-    set({ user: mockUser, isAuthenticated: true })
+  setUser: (user) => {
+    set({ user, isAuthenticated: !!user })
   },
 
-  signup: (email: string, password: string, name: string) => {
-    const mockUser: User = {
-      id: `user-${Math.random().toString(36).substr(2, 9)}`,
-      email,
-      name,
-      role: 'contestant',
+  setRole: (role) => {
+    const currentUser = get().user
+    if (currentUser) {
+      set({ user: { ...currentUser, role } })
     }
-    set({ user: mockUser, isAuthenticated: true })
   },
 
   logout: () => {
     set({ user: null, isAuthenticated: false })
   },
 
-  setRole: (role: User['role']) => {
-    set((state) => ({
-      user: state.user ? { ...state.user, role } : null,
-    }))
+  initAuth: async () => {
+    set({ isLoading: true })
+    try {
+      const query = useMe()
+      const { data } = query
+      if (data?.user) {
+        set({
+          user: {
+            id: data.user.id,
+            email: data.user.email,
+            name: data.user.name || 'User',
+            role: (data.user.role as User['role']) || 'viewer',
+          },
+          isAuthenticated: true,
+        })
+      } else {
+        set({ user: null, isAuthenticated: false })
+      }
+    } catch {
+      set({ user: null, isAuthenticated: false })
+    } finally {
+      set({ isLoading: false })
+    }
   },
 }))

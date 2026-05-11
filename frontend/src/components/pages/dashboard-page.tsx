@@ -1,66 +1,63 @@
-import React, { useMemo } from 'react'
+import React from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { useAuthStore } from '#/lib/auth-store'
-import { generateMockSubmissions, generateMockChallenges } from '#/lib/mock-data'
+import { useChallenges } from '#/hooks/api'
+import { useLeaderboard } from '#/hooks/api'
 import { TrendingUp, FileText, Trophy, Plus } from 'lucide-react'
-
-interface StatsCard {
-  label: string
-  value: string | number
-  icon: React.ReactNode
-}
 
 export function DashboardPage() {
   const navigate = useNavigate()
   const { user } = useAuthStore()
-  const submissions = useMemo(() => generateMockSubmissions(5), [])
-  const challenges = useMemo(() => generateMockChallenges(4), [])
+  const { data: challenges = [], isLoading: challengesLoading } = useChallenges()
+  const [challengeId, setChallengeId] = React.useState<string>('')
 
-  const stats: StatsCard[] = [
-    {
-      label: 'Total Submissions',
-      value: submissions.length,
-      icon: <FileText className="w-5 h-5 text-accent-blue" />,
-    },
-    {
-      label: 'Completed',
-      value: submissions.filter((s) => s.status === 'completed').length,
-      icon: <TrendingUp className="w-5 h-5 text-accent-green" />,
-    },
-    {
-      label: 'Available Challenges',
-      value: challenges.length,
-      icon: <Trophy className="w-5 h-5 text-accent-yellow" />,
-    },
-  ]
+  React.useEffect(() => {
+    if (challenges.length > 0 && !challengeId) {
+      setChallengeId(challenges[0].id)
+    }
+  }, [challenges, challengeId])
+
+  const { data: leaderboard, isLoading: leaderboardLoading } = useLeaderboard(challengeId)
 
   return (
     <div className="p-8 max-w-7xl mx-auto">
-      {/* Header */}
       <div className="mb-8">
         <h1 className="text-4xl font-bold text-ink mb-2">Dashboard</h1>
         <p className="text-body">Welcome back, {user?.name}! Here's your activity overview.</p>
       </div>
 
-      {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-        {stats.map((stat, i) => (
-          <div
-            key={i}
-            className="bg-surface border border-hairline rounded-lg p-6 hover:bg-surface-elevated transition-colors"
-          >
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-sm text-mute mb-2">{stat.label}</p>
-                <p className="text-3xl font-bold text-ink">{stat.value}</p>
-              </div>
-              <div className="text-2xl">{stat.icon}</div>
+        <div className="bg-surface border border-hairline rounded-lg p-6 hover:bg-surface-elevated transition-colors">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-sm text-mute mb-2">Total Submissions</p>
+              <p className="text-3xl font-bold text-ink">{leaderboard?.entries.length || 0}</p>
             </div>
+            <FileText className="w-5 h-5 text-accent-blue" />
           </div>
-        ))}
+        </div>
+        <div className="bg-surface border border-hairline rounded-lg p-6 hover:bg-surface-elevated transition-colors">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-sm text-mute mb-2">Completed</p>
+              <p className="text-3xl font-bold text-ink">
+                {leaderboard?.entries.filter((e) => e.status === 'final').length || 0}
+              </p>
+            </div>
+            <TrendingUp className="w-5 h-5 text-accent-green" />
+          </div>
+        </div>
+        <div className="bg-surface border border-hairline rounded-lg p-6 hover:bg-surface-elevated transition-colors">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-sm text-mute mb-2">Available Challenges</p>
+              <p className="text-3xl font-bold text-ink">{challenges.length}</p>
+            </div>
+            <Trophy className="w-5 h-5 text-accent-yellow" />
+          </div>
+        </div>
       </div>
 
-      {/* Recent Submissions */}
       <div className="mb-12">
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -76,46 +73,57 @@ export function DashboardPage() {
           </button>
         </div>
 
-        <div className="space-y-3">
-          {submissions.slice(0, 5).map((submission) => (
-            <div
-              key={submission.id}
-              onClick={() => navigate({ to: `/app/submissions/${submission.id}` })}
-              className="bg-surface border border-hairline rounded-lg p-4 hover:bg-surface-elevated cursor-pointer transition-colors"
+        {leaderboardLoading ? (
+          <div className="bg-surface border border-hairline rounded-lg p-12 text-center">
+            <p className="text-mute">Loading submissions...</p>
+          </div>
+        ) : leaderboard?.entries.length === 0 ? (
+          <div className="bg-surface border border-hairline rounded-lg p-12 text-center">
+            <p className="text-mute mb-4">No submissions yet</p>
+            <button
+              onClick={() => navigate({ to: '/app/submissions/new' })}
+              className="bg-primary hover:bg-primary-pressed text-on-primary font-medium px-4 py-2 rounded-md transition-colors"
             >
-              <div className="flex items-center justify-between">
-                <div className="flex-1">
-                  <p className="font-medium text-ink">{submission.title}</p>
-                  <div className="flex items-center gap-3 mt-2">
-                    <span className="text-xs px-2 py-1 rounded bg-surface-card text-mute">
-                      {submission.language}
-                    </span>
-                    <span
-                      className={`text-xs px-2 py-1 rounded font-medium ${
-                        submission.status === 'completed'
-                          ? 'bg-accent-green-soft text-accent-green'
-                          : submission.status === 'failed'
-                            ? 'bg-accent-red-soft text-accent-red'
-                            : 'bg-accent-blue-soft text-accent-blue'
-                      }`}
-                    >
-                      {submission.status}
-                    </span>
+              Create Your First Submission
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {leaderboard?.entries.slice(0, 5).map((entry) => (
+              <div
+                key={entry.submissionId}
+                onClick={() => navigate({ to: `/app/submissions/${entry.submissionId}` })}
+                className="bg-surface border border-hairline rounded-lg p-4 hover:bg-surface-elevated cursor-pointer transition-colors"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <p className="font-medium text-ink">Team Submission</p>
+                    <div className="flex items-center gap-3 mt-2">
+                      <span className="text-xs px-2 py-1 rounded bg-surface-card text-mute">source</span>
+                      <span
+                        className={`text-xs px-2 py-1 rounded font-medium ${
+                          entry.status === 'final'
+                            ? 'bg-accent-green-soft text-accent-green'
+                            : entry.status === 'live'
+                              ? 'bg-accent-blue-soft text-accent-blue'
+                              : 'bg-surface-card text-mute'
+                        }`}
+                      >
+                        {entry.status}
+                      </span>
+                    </div>
                   </div>
-                </div>
-                {submission.score !== undefined && (
                   <div className="text-right">
-                    <p className="text-2xl font-bold text-ink">{submission.score.toFixed(1)}</p>
+                    <p className="text-2xl font-bold text-ink">{entry.score.toFixed(1)}</p>
                     <p className="text-xs text-mute">Score</p>
                   </div>
-                )}
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
 
-      {/* Active Challenges */}
       <div>
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -130,37 +138,35 @@ export function DashboardPage() {
           </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {challenges.slice(0, 4).map((challenge) => (
-            <div
-              key={challenge.id}
-              onClick={() => navigate({ to: `/challenges/${challenge.id}` })}
-              className="bg-surface border border-hairline rounded-lg p-4 hover:bg-surface-elevated cursor-pointer transition-colors"
-            >
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex-1">
-                  <h3 className="font-medium text-ink mb-1">{challenge.title}</h3>
-                  <span
-                    className={`text-xs px-2 py-1 rounded font-medium ${
-                      challenge.difficulty === 'easy'
-                        ? 'bg-accent-green-soft text-accent-green'
-                        : challenge.difficulty === 'hard'
-                          ? 'bg-accent-red-soft text-accent-red'
-                          : 'bg-accent-yellow-soft text-accent-yellow'
-                    }`}
-                  >
-                    {challenge.difficulty}
-                  </span>
+        {challengesLoading ? (
+          <div className="bg-surface border border-hairline rounded-lg p-12 text-center">
+            <p className="text-mute">Loading challenges...</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {challenges.slice(0, 4).map((challenge) => (
+              <div
+                key={challenge.id}
+                onClick={() => navigate({ to: `/challenges/${challenge.id}` })}
+                className="bg-surface border border-hairline rounded-lg p-4 hover:bg-surface-elevated cursor-pointer transition-colors"
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex-1">
+                    <h3 className="font-medium text-ink mb-1">{challenge.title}</h3>
+                    <span className="text-xs px-2 py-1 rounded font-medium bg-accent-blue-soft text-accent-blue capitalize">
+                      {challenge.kind.replace('_', ' ')}
+                    </span>
+                  </div>
+                </div>
+                <p className="text-xs text-mute mb-3">Challenge ID: {challenge.id.slice(0, 8)}...</p>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-body">Active</span>
+                  <span className="text-xs text-body">{challenge.protocol}</span>
                 </div>
               </div>
-              <p className="text-xs text-mute mb-3">{challenge.description.slice(0, 80)}...</p>
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-body">{challenge.participants} participants</span>
-                <span className="text-xs text-body capitalize">{challenge.kind}</span>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )

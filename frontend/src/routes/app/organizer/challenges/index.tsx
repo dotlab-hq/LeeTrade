@@ -7,18 +7,22 @@ import { Plus, Edit3 } from 'lucide-react'
 import { useMemo } from 'react'
 import { DataTable } from '@/components/ui/table.tsx'
 import { createColumnHelper } from '@tanstack/react-table'
+import { requireRole } from '#/lib/route-guards'
 
-export const Route = createFileRoute('/app/organizer/challenges/')({ component: ChallengeManager })
+export const Route = createFileRoute( '/app/organizer/challenges/' )( {
+  beforeLoad: () => requireRole( ['admin', 'organizer'] ),
+  component: ChallengeManager,
+} )
 
 const columnHelper = createColumnHelper<typeof challenges[number]>()
 
 const columns = [
-  columnHelper.accessor('name', { header: 'Name', cell: (info) => <span className="text-on-dark">{info.getValue()}</span> }),
-  columnHelper.accessor('difficulty', { header: 'Difficulty', cell: (info) => <span className="text-body">{info.getValue()}</span> }),
-  columnHelper.accessor('status', { header: 'Status', cell: (info) => <span className={`text-xs font-medium ${statusColors[info.getValue()]}`}>{info.getValue()}</span> }),
-  columnHelper.accessor('submissions', { header: 'Submissions', cell: (info) => <span className="text-body">{info.getValue()}</span> }),
-  columnHelper.accessor('participants', { header: 'Participants', cell: (info) => <span className="text-body">{info.getValue()}</span> }),
-  columnHelper.display({
+  columnHelper.accessor( 'name', { header: 'Name', cell: ( info ) => <span className="text-on-dark">{info.getValue()}</span> } ),
+  columnHelper.accessor( 'difficulty', { header: 'Difficulty', cell: ( info ) => <span className="text-body">{info.getValue()}</span> } ),
+  columnHelper.accessor( 'status', { header: 'Status', cell: ( info ) => <span className={`text-xs font-medium ${statusColors[info.getValue()]}`}>{info.getValue()}</span> } ),
+  columnHelper.accessor( 'submissions', { header: 'Submissions', cell: ( info ) => <span className="text-body">{info.getValue()}</span> } ),
+  columnHelper.accessor( 'participants', { header: 'Participants', cell: ( info ) => <span className="text-body">{info.getValue()}</span> } ),
+  columnHelper.display( {
     id: 'actions',
     header: '',
     cell: () => (
@@ -26,12 +30,12 @@ const columns = [
         <Edit3 className="size-3" />
       </Button>
     ),
-  }),
+  } ),
 ]
 
 function ChallengeManager() {
-  const pushDummyToast = useUiStore((s) => s.pushDummyToast)
-  const data = useMemo(() => challenges, [])
+  const pushDummyToast = useUiStore( ( s ) => s.pushDummyToast )
+  const data = useMemo( () => challenges, [] )
 
   return (
     <div>
@@ -39,7 +43,7 @@ function ChallengeManager() {
       <PageHeader
         title="Challenge Manager"
         description="Create and manage challenge definitions."
-        actions={<Button onClick={() => pushDummyToast('Challenge creation flow started')}><Plus className="size-4" /> New Challenge</Button>}
+        actions={<Button onClick={() => pushDummyToast( 'Challenge creation flow started' )}><Plus className="size-4" /> New Challenge</Button>}
       />
       <DataTable columns={columns} data={data} pageSize={10} />
     </div>

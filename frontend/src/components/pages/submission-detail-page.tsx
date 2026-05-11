@@ -1,46 +1,63 @@
-import React, { useMemo } from 'react'
+import React, { useState } from 'react'
 import { useParams, useNavigate } from '@tanstack/react-router'
-import { generateMockRuns } from '#/lib/mock-data'
-import { ArrowLeft, Play, Download, Trash2 } from 'lucide-react'
+import { useSubmission, useSubmissionLogs, useSubmissionBuildLogs } from '#/hooks/api'
+import { ArrowLeft, Play, Download, Trash2, RefreshCw } from 'lucide-react'
 
 export function SubmissionDetailPage() {
   const { submissionId } = useParams({ from: '/app/submissions/$submissionId' })
   const navigate = useNavigate()
-  const runs = useMemo(() => generateMockRuns(submissionId || 'sub-1', 5), [submissionId])
+  const { data: submission, isLoading, error } = useSubmission(submissionId || '')
+  const { data: logs } = useSubmissionLogs(submissionId || '')
+  const { data: buildLogs } = useSubmissionBuildLogs(submissionId || '')
+  const [activeTab, setActiveTab] = useState<'runs' | 'logs' | 'settings'>('runs')
 
-  // Mock submission data
-  const submission = {
-    id: submissionId,
-    title: 'High-Performance Orderbook',
-    challengeId: 'challenge-1',
-    status: 'completed',
-    language: 'rust',
-    description: 'An optimized orderbook implementation using SIMD and lockfree data structures.',
-    createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
-    updatedAt: new Date(Date.now() - 2 * 60 * 60 * 1000),
-    version: '1.2.3',
-  }
-
-  const statusColors = {
-    draft: 'bg-surface-card text-mute',
+  const statusColors: Record<string, string> = {
+    uploaded: 'bg-surface-card text-mute',
+    validating: 'bg-accent-blue-soft text-accent-blue',
+    build_queued: 'bg-accent-blue-soft text-accent-blue',
     building: 'bg-accent-blue-soft text-accent-blue',
+    build_failed: 'bg-accent-red-soft text-accent-red',
+    deploying: 'bg-accent-yellow-soft text-accent-yellow',
+    running: 'bg-accent-blue-soft text-accent-blue',
     ready: 'bg-accent-green-soft text-accent-green',
     testing: 'bg-accent-yellow-soft text-accent-yellow',
     completed: 'bg-accent-green-soft text-accent-green',
     failed: 'bg-accent-red-soft text-accent-red',
+    invalid: 'bg-accent-red-soft text-accent-red',
   }
 
-  const runStatusColors = {
-    queued: 'bg-surface-card text-mute',
-    starting: 'bg-accent-blue-soft text-accent-blue',
-    running: 'bg-accent-blue-soft text-accent-blue',
-    completed: 'bg-accent-green-soft text-accent-green',
-    failed: 'bg-accent-red-soft text-accent-red',
+  if (isLoading) {
+    return (
+      <div className="p-8 max-w-7xl mx-auto">
+        <div className="bg-surface border border-hairline rounded-lg p-12 text-center">
+          <p className="text-mute">Loading submission...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error || !submission) {
+    return (
+      <div className="p-8 max-w-7xl mx-auto">
+        <button
+          onClick={() => navigate({ to: '/app/submissions' })}
+          className="flex items-center gap-2 text-body hover:text-ink mb-6 transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back to Submissions
+        </button>
+        <div className="bg-surface border border-hairline rounded-lg p-12 text-center">
+          <p className="text-accent-red mb-4">Failed to load submission</p>
+          <button onClick={() => window.location.reload()} className="text-on-dark hover:text-ink font-medium">
+            Retry
+          </button>
+        </div>
+      </div>
+    )
   }
 
   return (
     <div className="p-8 max-w-7xl mx-auto">
-      {/* Back Button */}
       <button
         onClick={() => navigate({ to: '/app/submissions' })}
         className="flex items-center gap-2 text-body hover:text-ink mb-6 transition-colors"
@@ -49,24 +66,19 @@ export function SubmissionDetailPage() {
         Back to Submissions
       </button>
 
-      {/* Header Section */}
       <div className="bg-surface border border-hairline rounded-lg p-6 mb-6">
         <div className="flex items-start justify-between mb-4">
           <div>
-            <h1 className="text-3xl font-bold text-ink mb-2">{submission.title}</h1>
+            <h1 className="text-3xl font-bold text-ink mb-2">{submission.manifest.challengeKind.replace('_', ' ')} Submission</h1>
             <div className="flex items-center gap-3">
-              <span
-                className={`text-xs px-2 py-1 rounded font-medium ${
-                  statusColors[submission.status as keyof typeof statusColors]
-                }`}
-              >
-                {submission.status}
+              <span className={`text-xs px-2 py-1 rounded font-medium ${statusColors[submission.status]}`}>
+                {submission.status.replace('_', ' ')}
               </span>
-              <span className="text-xs px-2 py-1 rounded bg-surface-card text-mute">
-                {submission.language}
+              <span className="text-xs px-2 py-1 rounded bg-surface-card text-mute uppercase">
+                {submission.manifest.language}
               </span>
               <span className="text-xs px-2 py-1 rounded bg-surface-elevated text-body">
-                v{submission.version}
+                {submission.type}
               </span>
             </div>
           </div>
@@ -80,16 +92,12 @@ export function SubmissionDetailPage() {
           </div>
         </div>
 
-        <p className="text-body mb-4">{submission.description}</p>
+        <p className="text-body mb-4">Submission ID: {submission.id}</p>
 
         <div className="grid grid-cols-3 gap-4 pt-4 border-t border-hairline">
           <div>
-            <p className="text-xs text-mute mb-1">Created</p>
-            <p className="text-sm font-medium text-ink">{submission.createdAt.toLocaleDateString()}</p>
-          </div>
-          <div>
-            <p className="text-xs text-mute mb-1">Last Updated</p>
-            <p className="text-sm font-medium text-ink">{submission.updatedAt.toLocaleDateString()}</p>
+            <p className="text-xs text-mute mb-1">Submitted</p>
+            <p className="text-sm font-medium text-ink">{new Date(submission.submittedAt).toLocaleDateString()}</p>
           </div>
           <div>
             <p className="text-xs text-mute mb-1">Challenge</p>
@@ -97,84 +105,107 @@ export function SubmissionDetailPage() {
               onClick={() => navigate({ to: `/challenges/${submission.challengeId}` })}
               className="text-sm font-medium text-on-dark hover:text-ink transition-colors"
             >
-              {submission.challengeId}
+              {submission.challengeId.slice(0, 8)}...
             </button>
+          </div>
+          <div>
+            <p className="text-xs text-mute mb-1">Team</p>
+            <p className="text-sm font-medium text-ink">{submission.teamId.slice(0, 8)}...</p>
           </div>
         </div>
       </div>
 
-      {/* Tabs */}
       <div className="mb-6">
         <div className="flex border-b border-hairline">
-          <button className="px-4 py-3 font-medium text-on-dark border-b-2 border-on-dark">
+          <button
+            onClick={() => setActiveTab('runs')}
+            className={`px-4 py-3 font-medium border-b-2 transition-colors ${
+              activeTab === 'runs' ? 'text-on-dark border-on-dark' : 'text-mute hover:text-body border-transparent'
+            }`}
+          >
             Runs
           </button>
-          <button className="px-4 py-3 font-medium text-mute hover:text-body">
+          <button
+            onClick={() => setActiveTab('logs')}
+            className={`px-4 py-3 font-medium border-b-2 transition-colors ${
+              activeTab === 'logs' ? 'text-on-dark border-on-dark' : 'text-mute hover:text-body border-transparent'
+            }`}
+          >
             Logs
           </button>
-          <button className="px-4 py-3 font-medium text-mute hover:text-body">
+          <button
+            onClick={() => setActiveTab('settings')}
+            className={`px-4 py-3 font-medium border-b-2 transition-colors ${
+              activeTab === 'settings' ? 'text-on-dark border-on-dark' : 'text-mute hover:text-body border-transparent'
+            }`}
+          >
             Settings
           </button>
         </div>
       </div>
 
-      {/* Runs Section */}
-      <div>
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-ink">Benchmark Runs</h2>
-          <button className="bg-primary hover:bg-primary-pressed text-on-primary font-medium px-4 py-2 rounded-md flex items-center gap-2 transition-colors">
-            <Play className="w-4 h-4" />
-            Start New Run
-          </button>
+      {activeTab === 'runs' && (
+        <div>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold text-ink">Benchmark Runs</h2>
+            <button className="bg-primary hover:bg-primary-pressed text-on-primary font-medium px-4 py-2 rounded-md flex items-center gap-2 transition-colors">
+              <Play className="w-4 h-4" />
+              Start New Run
+            </button>
+          </div>
+
+          <div className="bg-surface border border-hairline rounded-lg p-12 text-center">
+            <p className="text-mute mb-4">No runs yet</p>
+            <p className="text-xs text-body">Submit the form above and start a run to see results here</p>
+          </div>
         </div>
+      )}
 
-        <div className="space-y-3">
-          {runs.map((run) => (
-            <div
-              key={run.id}
-              onClick={() => navigate({ to: `/app/runs/${run.id}` })}
-              className="bg-surface border border-hairline rounded-lg p-4 hover:bg-surface-elevated cursor-pointer transition-colors"
-            >
-              <div className="flex items-start justify-between mb-3">
-                <div>
-                  <h3 className="font-medium text-ink mb-2">Run #{run.id.split('-').pop()}</h3>
-                  <span
-                    className={`text-xs px-2 py-1 rounded font-medium ${
-                      runStatusColors[run.status as keyof typeof runStatusColors]
-                    }`}
-                  >
-                    {run.status}
-                  </span>
+      {activeTab === 'logs' && (
+        <div>
+          <h2 className="text-xl font-bold text-ink mb-6">Submission Logs</h2>
+          {logs && logs.logs.length > 0 ? (
+            <div className="bg-surface border border-hairline rounded-lg p-4 font-mono text-xs">
+              {logs.logs.map((log, i) => (
+                <div key={i} className="py-1 border-b border-hairline last:border-0">
+                  <span className="text-mute">[{new Date(log.ts).toLocaleTimeString()}]</span>{' '}
+                  <span className="text-body">{log.message}</span>
                 </div>
-                <p className="text-xs text-mute">{run.startedAt.toLocaleString()}</p>
+              ))}
+            </div>
+          ) : (
+            <div className="bg-surface border border-hairline rounded-lg p-12 text-center">
+              <p className="text-mute">No logs available</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {activeTab === 'settings' && (
+        <div>
+          <h2 className="text-xl font-bold text-ink mb-6">Submission Settings</h2>
+          <div className="bg-surface border border-hairline rounded-lg p-6">
+            <div className="space-y-4">
+              <div>
+                <p className="text-xs text-mute mb-1">Manifest Version</p>
+                <p className="text-sm font-medium text-ink">{submission.manifest.version}</p>
               </div>
-
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-4 pt-3 border-t border-hairline">
-                <div>
-                  <p className="text-xs text-mute mb-1">P50 Latency</p>
-                  <p className="text-sm font-medium text-ink">{run.latencyP50.toFixed(2)}ms</p>
-                </div>
-                <div>
-                  <p className="text-xs text-mute mb-1">P99 Latency</p>
-                  <p className="text-sm font-medium text-ink">{run.latencyP99.toFixed(2)}ms</p>
-                </div>
-                <div>
-                  <p className="text-xs text-mute mb-1">Throughput</p>
-                  <p className="text-sm font-medium text-ink">{run.throughputSustained.toFixed(0)} ops/s</p>
-                </div>
-                <div>
-                  <p className="text-xs text-mute mb-1">Correctness</p>
-                  <p className="text-sm font-medium text-accent-green">{run.correctnessScore.toFixed(1)}%</p>
-                </div>
-                <div>
-                  <p className="text-xs text-mute mb-1">Final Score</p>
-                  <p className="text-sm font-bold text-ink">{run.finalScore.toFixed(1)}</p>
-                </div>
+              <div>
+                <p className="text-xs text-mute mb-1">Protocol</p>
+                <p className="text-sm font-medium text-ink uppercase">{submission.manifest.protocol}</p>
+              </div>
+              <div>
+                <p className="text-xs text-mute mb-1">Entrypoint</p>
+                <p className="text-sm font-medium text-ink">{submission.manifest.entrypoint}</p>
+              </div>
+              <div>
+                <p className="text-xs text-mute mb-1">Run Command</p>
+                <p className="text-sm font-medium text-ink">{submission.manifest.runCommand}</p>
               </div>
             </div>
-          ))}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }

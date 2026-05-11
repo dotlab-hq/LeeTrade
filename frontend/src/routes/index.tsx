@@ -15,7 +15,9 @@ function Landing() {
             <Link to="/leaderboard" className="text-sm text-body hover:text-on-dark">Leaderboard</Link>
           </nav>
           <div className="flex items-center gap-3">
-            <Button variant="ghost" size="sm" className="text-body">Sign In</Button>
+            <Button asChild variant="ghost" size="sm" className="text-body">
+              <Link to="/signin">Sign In</Link>
+            </Button>
             <Button size="sm" className="bg-primary text-on-primary hover:bg-primary/90">Get Started</Button>
           </div>
         </div>

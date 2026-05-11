@@ -5,7 +5,7 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { openAPI } from "better-auth/plugins"
 export const auth = betterAuth({
   adapter: drizzleAdapter(db, {
-    provider: "sqlite",
+    provider: "postgres",
     usePlural: true,
     debugLogs: true,
     schema

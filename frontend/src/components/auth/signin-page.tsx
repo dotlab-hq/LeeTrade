@@ -1,32 +1,23 @@
 import React, { useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
+import { useSignIn } from '#/hooks/api'
 import { useAuthStore } from '#/lib/auth-store'
 import { Mail, Lock, AlertCircle } from 'lucide-react'
 
-interface SigninFormData {
-  email: string
-  password: string
-}
-
 export function SigninPage() {
   const navigate = useNavigate()
-  const { login } = useAuthStore()
-  const [formData, setFormData] = useState<SigninFormData>({
-    email: '',
-    password: '',
-  })
+  const signInMutation = useSignIn()
+  const setUser = useAuthStore((s) => s.setUser)
+
+  const [formData, setFormData] = useState({ email: '', password: '' })
   const [errors, setErrors] = useState<Record<string, string>>({})
-  const [isLoading, setIsLoading] = useState(false)
 
-  const validateForm = (): boolean => {
+  const validateForm = () => {
     const newErrors: Record<string, string> = {}
-
     if (!formData.email.trim()) newErrors.email = 'Email is required'
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email))
       newErrors.email = 'Invalid email format'
-
     if (!formData.password) newErrors.password = 'Password is required'
-
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
@@ -35,13 +26,18 @@ export function SigninPage() {
     e.preventDefault()
     if (!validateForm()) return
 
-    setIsLoading(true)
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 600))
-
-    login(formData.email, formData.password)
-    setIsLoading(false)
-    navigate({ to: '/app' })
+    try {
+      const result = await signInMutation.mutateAsync(formData)
+      setUser({
+        id: result.user.id,
+        email: result.user.email,
+        name: result.user.name || 'User',
+        role: result.user.role || 'contestant',
+      })
+      navigate({ to: '/app' })
+    } catch (err) {
+      setErrors({ form: err instanceof Error ? err.message : 'Sign in failed' })
+    }
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -59,20 +55,22 @@ export function SigninPage() {
   return (
     <div className="min-h-screen bg-canvas flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-md">
-        {/* Header */}
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-bold text-ink mb-2">Welcome back</h1>
           <p className="text-body">Sign in to your LeetTrade account</p>
         </div>
 
-        {/* Form Card */}
         <div className="bg-surface border border-hairline rounded-lg p-6 mb-6">
           <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Email Field */}
+            {errors.form && (
+              <div className="p-3 bg-accent-red-soft border border-accent-red rounded-md flex items-center gap-2 text-accent-red text-sm">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                {errors.form}
+              </div>
+            )}
+
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-charcoal mb-2">
-                Email
-              </label>
+              <label htmlFor="email" className="block text-sm font-medium text-charcoal mb-2">Email</label>
               <div className="relative">
                 <Mail className="absolute left-3 top-3 w-4 h-4 text-mute pointer-events-none" />
                 <input
@@ -95,11 +93,8 @@ export function SigninPage() {
               )}
             </div>
 
-            {/* Password Field */}
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-charcoal mb-2">
-                Password
-              </label>
+              <label htmlFor="password" className="block text-sm font-medium text-charcoal mb-2">Password</label>
               <div className="relative">
                 <Lock className="absolute left-3 top-3 w-4 h-4 text-mute pointer-events-none" />
                 <input
@@ -122,46 +117,20 @@ export function SigninPage() {
               )}
             </div>
 
-            {/* Submit Button */}
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={signInMutation.isPending}
               className="w-full bg-primary hover:bg-primary-pressed disabled:opacity-50 text-on-primary font-medium py-2 rounded-md transition-colors mt-6"
             >
-              {isLoading ? 'Signing in...' : 'Sign in'}
+              {signInMutation.isPending ? 'Signing in...' : 'Sign in'}
             </button>
           </form>
-
-          {/* Divider */}
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-hairline" />
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-surface text-mute">or</span>
-            </div>
-          </div>
-
-          {/* Demo Button */}
-          <button
-            onClick={() => {
-              login('demo@leetrade.com', 'demo123')
-              navigate({ to: '/app' })
-            }}
-            className="w-full bg-surface-elevated hover:bg-surface-card text-on-dark font-medium py-2 rounded-md border border-hairline transition-colors"
-          >
-            Try demo account
-          </button>
         </div>
 
-        {/* Sign Up Link */}
         <div className="text-center">
           <p className="text-body">
             Don't have an account?{' '}
-            <button
-              onClick={() => navigate({ to: '/signup' })}
-              className="text-on-dark hover:text-ink font-medium"
-            >
+            <button onClick={() => navigate({ to: '/signup' })} className="text-on-dark hover:text-ink font-medium">
               Sign up
             </button>
           </p>

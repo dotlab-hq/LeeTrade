@@ -1,6 +1,7 @@
 import { Link, useRouterState } from '@tanstack/react-router'
-import { Menu, X, Home, Trophy, BarChart3, User, Settings, Send, Play, History } from 'lucide-react'
+import { Menu, X, Home, Trophy, BarChart3, User, Settings, Send, Play, History, LogOut, UserCircle } from 'lucide-react'
 import { useUiStore } from '@/stores/ui-store.ts'
+import { useAuthStore } from '@/lib/auth-store.ts'
 import { cn } from '@/lib/utils.ts'
 import { buttonVariants } from './button.tsx'
 
@@ -21,6 +22,7 @@ const appNavItems = [
 
 export function TopNav() {
   const { role, setMobileNavOpen, setCommandOpen } = useUiStore()
+  const { user, isAuthenticated, logout } = useAuthStore()
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-hairline bg-surface-strong/80 backdrop-blur-sm">
@@ -37,31 +39,59 @@ export function TopNav() {
         </div>
 
         <div className="flex items-center gap-2">
-          <select
-            value={role}
-            onChange={( e ) => useUiStore.getState().setRole( e.target.value as any )}
-            className="rounded-md border border-hairline bg-surface px-2 py-1 text-sm"
-          >
-            <option value="contestant">Contestant</option>
-            <option value="organizer">Organizer</option>
-            <option value="admin">Admin</option>
-            <option value="viewer">Viewer</option>
-          </select>
+          {isAuthenticated ? (
+            <div className="flex items-center gap-3">
+              <Link to="/app" className={cn(buttonVariants({ variant: 'ghost' }), 'hidden md:inline-flex')}>Dashboard</Link>
+              <div className="hidden md:flex items-center gap-2 text-sm text-body">
+                <UserCircle className="size-4" />
+                <span>{user?.name}</span>
+              </div>
+              <button
+                onClick={logout}
+                className="p-2 text-mute hover:text-accent-red transition-colors"
+                title="Logout"
+              >
+                <LogOut className="size-5" />
+              </button>
+            </div>
+          ) : (
+            <>
+              <Link
+                to="/signin"
+                className={cn(
+                  buttonVariants( { variant: 'ghost' } ),
+                  'hidden md:flex'
+                )}
+              >
+                Sign In
+              </Link>
+              <Link
+                to="/signup"
+                className={cn(
+                  buttonVariants( { variant: 'default' } ),
+                  'hidden md:flex'
+                )}
+              >
+                Get Started
+              </Link>
+              <button
+                onClick={() => setMobileNavOpen( true )}
+                className="rounded-md p-2 hover:bg-surface-elevated md:hidden"
+              >
+                <Menu className="size-5" />
+              </button>
+            </>
+          )}
 
-          <button
-            onClick={() => setCommandOpen( true )}
-            className="hidden items-center gap-2 rounded-md border border-hairline bg-surface px-3 py-1.5 text-sm hover:bg-surface-elevated md:flex"
-          >
-            <span className="text-mute">Search...</span>
-            <kbd className="rounded border border-hairline-strong bg-surface-elevated px-1.5 text-xs">⌘K</kbd>
-          </button>
-
-          <button
-            onClick={() => setMobileNavOpen( true )}
-            className="rounded-md p-2 hover:bg-surface-elevated md:hidden"
-          >
-            <Menu className="size-5" />
-          </button>
+          {isAuthenticated && (
+            <button
+              onClick={() => setCommandOpen( true )}
+              className="hidden items-center gap-2 rounded-md border border-hairline bg-surface px-3 py-1.5 text-sm hover:bg-surface-elevated md:flex"
+            >
+              <span className="text-mute">Search...</span>
+              <kbd className="rounded border border-hairline-strong bg-surface-elevated px-1.5 text-xs">⌘K</kbd>
+            </button>
+          )}
         </div>
       </div>
     </header>

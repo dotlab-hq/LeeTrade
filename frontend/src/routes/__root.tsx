@@ -12,6 +12,8 @@ import PostHogProvider from '../integrations/posthog/provider'
 import TanStackQueryDevtools from '../integrations/tanstack-query/devtools'
 import { ToastStack } from '../components/ui/toast'
 import { ConfirmDialog, CommandDialog } from '../components/ui/modals'
+import { ErrorComponent } from '../components/ui/error-component'
+import { NotFoundComponent } from '../components/ui/not-found-component'
 import { useUiStore } from '../stores/ui-store'
 
 import appCss from '../styles.css?url'
@@ -22,8 +24,10 @@ interface MyRouterContext {
   queryClient: QueryClient
 }
 
-export const Route = createRootRouteWithContext<MyRouterContext>()({
-  head: () => ({
+export const Route = createRootRouteWithContext<MyRouterContext>()( {
+  errorComponent: ErrorComponent,
+  notFoundComponent: NotFoundComponent,
+  head: () => ( {
     meta: [
       {
         charSet: 'utf-8',
@@ -42,28 +46,28 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
         href: appCss,
       },
     ],
-  }),
+  } ),
   shellComponent: RootDocument,
-})
+} )
 
 function KeyboardShortcuts() {
   const { setCommandOpen } = useUiStore()
 
-  useEffect(() => {
-    function handleKeyDown(e: KeyboardEvent) {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+  useEffect( () => {
+    function handleKeyDown( e: KeyboardEvent ) {
+      if ( ( e.metaKey || e.ctrlKey ) && e.key === 'k' ) {
         e.preventDefault()
-        setCommandOpen(true)
+        setCommandOpen( true )
       }
     }
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [setCommandOpen])
+    window.addEventListener( 'keydown', handleKeyDown )
+    return () => window.removeEventListener( 'keydown', handleKeyDown )
+  }, [setCommandOpen] )
 
   return null
 }
 
-function RootDocument({ children }: { children: React.ReactNode }) {
+function RootDocument( { children }: { children: React.ReactNode } ) {
   return (
     <html lang="en" className="dark">
       <head>

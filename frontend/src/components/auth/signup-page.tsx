@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
+import { useSignUp } from '#/hooks/api'
 import { useAuthStore } from '#/lib/auth-store'
 import { Mail, Lock, User, AlertCircle } from 'lucide-react'
 
@@ -12,57 +13,66 @@ interface SignupFormData {
 
 export function SignupPage() {
   const navigate = useNavigate()
-  const { signup } = useAuthStore()
-  const [formData, setFormData] = useState<SignupFormData>({
+  const signUpMutation = useSignUp()
+  const setUser = useAuthStore( ( s ) => s.setUser )
+  const [formData, setFormData] = useState<SignupFormData>( {
     name: '',
     email: '',
     password: '',
     confirmPassword: '',
-  })
-  const [errors, setErrors] = useState<Record<string, string>>({})
-  const [isLoading, setIsLoading] = useState(false)
+  } )
+  const [errors, setErrors] = useState<Record<string, string>>( {} )
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {}
 
-    if (!formData.name.trim()) newErrors.name = 'Name is required'
-    if (!formData.email.trim()) newErrors.email = 'Email is required'
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email))
+    if ( !formData.name.trim() ) newErrors.name = 'Name is required'
+    if ( !formData.email.trim() ) newErrors.email = 'Email is required'
+    else if ( !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test( formData.email ) )
       newErrors.email = 'Invalid email format'
 
-    if (!formData.password) newErrors.password = 'Password is required'
-    else if (formData.password.length < 8)
+    if ( !formData.password ) newErrors.password = 'Password is required'
+    else if ( formData.password.length < 8 )
       newErrors.password = 'Password must be at least 8 characters'
 
-    if (formData.password !== formData.confirmPassword)
+    if ( formData.password !== formData.confirmPassword )
       newErrors.confirmPassword = 'Passwords do not match'
 
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
+    setErrors( newErrors )
+    return Object.keys( newErrors ).length === 0
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async ( e: React.FormEvent ) => {
     e.preventDefault()
-    if (!validateForm()) return
+    if ( !validateForm() ) return
 
-    setIsLoading(true)
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 600))
-
-    signup(formData.email, formData.password, formData.name)
-    setIsLoading(false)
-    navigate({ to: '/app' })
+    try {
+      const result = await signUpMutation.mutateAsync( {
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+      } )
+      setUser( {
+        id: result.user.id,
+        email: result.user.email,
+        name: result.user.name || 'User',
+        role: result.user.role || 'contestant',
+      } )
+      navigate( { to: '/app' } )
+    } catch ( err ) {
+      setErrors( { form: err instanceof Error ? err.message : 'Sign up failed' } )
+    }
   }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = ( e: React.ChangeEvent<HTMLInputElement> ) => {
     const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
-    if (errors[name]) {
-      setErrors((prev) => {
+    setFormData( ( prev ) => ( { ...prev, [name]: value } ) )
+    if ( errors[name] ) {
+      setErrors( ( prev ) => {
         const newErrors = { ...prev }
         delete newErrors[name]
         return newErrors
-      })
+      } )
     }
   }
 
@@ -78,6 +88,13 @@ export function SignupPage() {
         {/* Form Card */}
         <div className="bg-surface border border-hairline rounded-lg p-6 mb-6">
           <form onSubmit={handleSubmit} className="space-y-5">
+            {errors.form && (
+              <div className="p-3 bg-accent-red-soft border border-accent-red rounded-md flex items-center gap-2 text-accent-red text-sm">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                {errors.form}
+              </div>
+            )}
+
             {/* Name Field */}
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-charcoal mb-2">
@@ -92,9 +109,8 @@ export function SignupPage() {
                   value={formData.name}
                   onChange={handleChange}
                   placeholder="John Doe"
-                  className={`w-full pl-10 pr-4 py-2 bg-surface-elevated border rounded-md text-on-dark placeholder-mute outline-none transition-colors ${
-                    errors.name ? 'border-accent-red' : 'border-hairline focus:border-hairline-strong'
-                  }`}
+                  className={`w-full pl-10 pr-4 py-2 bg-surface-elevated border rounded-md text-on-dark placeholder-mute outline-none transition-colors ${errors.name ? 'border-accent-red' : 'border-hairline focus:border-hairline-strong'
+                    }`}
                 />
               </div>
               {errors.name && (
@@ -119,9 +135,8 @@ export function SignupPage() {
                   value={formData.email}
                   onChange={handleChange}
                   placeholder="you@example.com"
-                  className={`w-full pl-10 pr-4 py-2 bg-surface-elevated border rounded-md text-on-dark placeholder-mute outline-none transition-colors ${
-                    errors.email ? 'border-accent-red' : 'border-hairline focus:border-hairline-strong'
-                  }`}
+                  className={`w-full pl-10 pr-4 py-2 bg-surface-elevated border rounded-md text-on-dark placeholder-mute outline-none transition-colors ${errors.email ? 'border-accent-red' : 'border-hairline focus:border-hairline-strong'
+                    }`}
                 />
               </div>
               {errors.email && (
@@ -146,9 +161,8 @@ export function SignupPage() {
                   value={formData.password}
                   onChange={handleChange}
                   placeholder="••••••••"
-                  className={`w-full pl-10 pr-4 py-2 bg-surface-elevated border rounded-md text-on-dark placeholder-mute outline-none transition-colors ${
-                    errors.password ? 'border-accent-red' : 'border-hairline focus:border-hairline-strong'
-                  }`}
+                  className={`w-full pl-10 pr-4 py-2 bg-surface-elevated border rounded-md text-on-dark placeholder-mute outline-none transition-colors ${errors.password ? 'border-accent-red' : 'border-hairline focus:border-hairline-strong'
+                    }`}
                 />
               </div>
               {errors.password && (
@@ -173,9 +187,8 @@ export function SignupPage() {
                   value={formData.confirmPassword}
                   onChange={handleChange}
                   placeholder="••••••••"
-                  className={`w-full pl-10 pr-4 py-2 bg-surface-elevated border rounded-md text-on-dark placeholder-mute outline-none transition-colors ${
-                    errors.confirmPassword ? 'border-accent-red' : 'border-hairline focus:border-hairline-strong'
-                  }`}
+                  className={`w-full pl-10 pr-4 py-2 bg-surface-elevated border rounded-md text-on-dark placeholder-mute outline-none transition-colors ${errors.confirmPassword ? 'border-accent-red' : 'border-hairline focus:border-hairline-strong'
+                    }`}
                 />
               </div>
               {errors.confirmPassword && (
@@ -189,10 +202,10 @@ export function SignupPage() {
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={signUpMutation.isPending}
               className="w-full bg-primary hover:bg-primary-pressed disabled:opacity-50 text-on-primary font-medium py-2 rounded-md transition-colors mt-6"
             >
-              {isLoading ? 'Creating account...' : 'Create account'}
+              {signUpMutation.isPending ? 'Creating account...' : 'Create account'}
             </button>
           </form>
         </div>
@@ -202,7 +215,7 @@ export function SignupPage() {
           <p className="text-body">
             Already have an account?{' '}
             <button
-              onClick={() => navigate({ to: '/signin' })}
+              onClick={() => navigate( { to: '/signin' } )}
               className="text-on-dark hover:text-ink font-medium"
             >
               Sign in
