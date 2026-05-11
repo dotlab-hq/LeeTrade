@@ -119,3 +119,89 @@ export function generateMockLeaderboard(challengeId: string, count: number = 10)
     }))
     .sort((a, b) => b.score - a.score)
 }
+
+// Cached data generators
+let cachedSubmissions: Submission[] | null = null
+let cachedChallenges: Challenge[] | null = null
+let cachedLeaderboards: Map<string, LeaderboardEntry[]> = new Map()
+
+export function getSubmissions(): Submission[] {
+  if (!cachedSubmissions) {
+    cachedSubmissions = generateMockSubmissions(12)
+  }
+  return cachedSubmissions
+}
+
+export function getChallenges(): Challenge[] {
+  if (!cachedChallenges) {
+    cachedChallenges = generateMockChallenges(5)
+  }
+  return cachedChallenges
+}
+
+export function getChallengeById(id: string): Challenge | undefined {
+  return getChallenges().find((c) => c.id === id)
+}
+
+export function getSubmissionById(id: string): Submission | undefined {
+  return getSubmissions().find((s) => s.id === id)
+}
+
+export function getLeaderboard(challengeId: string): LeaderboardEntry[] {
+  if (!cachedLeaderboards.has(challengeId)) {
+    cachedLeaderboards.set(challengeId, generateMockLeaderboard(challengeId, 20))
+  }
+  return cachedLeaderboards.get(challengeId)!
+}
+
+// Convenience constants for backward compatibility
+export const submissions = getSubmissions()
+export const challenges = getChallenges()
+export const leaderboard = generateMockLeaderboard('challenge-1', 20)
+export const runs = generateMockRuns('sub-1', 10)
+
+// Status color constants
+export const submissionStatusColors: Record<Submission['status'], string> = {
+  draft: 'text-mute',
+  building: 'text-accent-blue',
+  ready: 'text-accent-green',
+  testing: 'text-accent-yellow',
+  completed: 'text-accent-green',
+  failed: 'text-accent-red',
+}
+
+export const statusColors: Record<Submission['status'], string> = submissionStatusColors
+
+// Traffic profiles for organizer page
+export interface TrafficProfile {
+  id: string
+  name: string
+  description: string
+  rps: number
+  connections: number
+  messageSize: number
+  duration: number
+}
+
+export const trafficProfiles: TrafficProfile[] = [
+  { id: '1', name: 'Light Load', description: '100 req/s, 10 connections', rps: 100, connections: 10, messageSize: 1024, duration: 60 },
+  { id: '2', name: 'Medium Load', description: '1000 req/s, 50 connections', rps: 1000, connections: 50, messageSize: 2048, duration: 120 },
+  { id: '3', name: 'Heavy Load', description: '10000 req/s, 200 connections', rps: 10000, connections: 200, messageSize: 4096, duration: 300 },
+]
+
+// Replay data for replays page
+export interface Replay {
+  id: string
+  submissionId: string
+  timestamp: Date
+  duration: number
+  status: 'recorded' | 'processing' | 'ready'
+}
+
+export const replays: Replay[] = Array.from({ length: 8 }).map((_, i) => ({
+  id: `replay-${i + 1}`,
+  submissionId: `sub-${Math.floor(Math.random() * 5) + 1}`,
+  timestamp: faker.date.recent({ days: 7 }),
+  duration: Math.floor(Math.random() * 300) + 60,
+  status: (['recorded', 'processing', 'ready'] as const)[Math.floor(Math.random() * 3)],
+}))

@@ -3,6 +3,7 @@ import { useUiStore } from '@/stores/ui-store.ts'
 import { Button } from '@/components/ui/button.tsx'
 import { Command } from 'lucide-react'
 import { useState } from 'react'
+import { useNavigate } from '@tanstack/react-router'
 
 export function ConfirmDialog() {
   const { confirm, closeConfirm, confirmNow } = useUiStore()
@@ -29,18 +30,21 @@ export function ConfirmDialog() {
 
 export function CommandDialog() {
   const { isCommandOpen, setCommandOpen, pushDummyToast } = useUiStore()
-  const [query, setQuery] = useState( '' )
+  const navigate = useNavigate()
+  const [query, setQuery] = useState('')
 
   const commands = [
-    { id: 'dashboard', label: 'Go to Dashboard', action: () => pushDummyToast( 'Navigated to Dashboard' ) },
-    { id: 'challenges', label: 'View Challenges', action: () => pushDummyToast( 'Viewed Challenges' ) },
-    { id: 'leaderboard', label: 'View Leaderboard', action: () => pushDummyToast( 'Viewed Leaderboard' ) },
-    { id: 'submissions', label: 'My Submissions', action: () => pushDummyToast( 'Viewed Submissions' ) },
+    { id: 'dashboard', label: 'Go to Dashboard', action: () => navigate({ to: '/app' }) },
+    { id: 'challenges', label: 'View Challenges', action: () => navigate({ to: '/challenges' }) },
+    { id: 'leaderboard', label: 'View Leaderboard', action: () => navigate({ to: '/leaderboard' }) },
+    { id: 'submissions', label: 'My Submissions', action: () => navigate({ to: '/app/submissions' }) },
+    { id: 'profile', label: 'Go to Profile', action: () => navigate({ to: '/app/profile' }) },
+    { id: 'new-submission', label: 'New Submission', action: () => navigate({ to: '/app/submissions/new' }) },
+    { id: 'review-queue', label: 'Review Queue', action: () => navigate({ to: '/app/admin/review' }) },
+    { id: 'audit-log', label: 'Audit Log', action: () => navigate({ to: '/app/admin/audit' }) },
   ]
 
-  const filtered = commands.filter( c =>
-    c.label.toLowerCase().includes( query.toLowerCase() )
-  )
+  const filtered = commands.filter((c) => c.label.toLowerCase().includes(query.toLowerCase()))
 
   return (
     <Dialog open={isCommandOpen} onOpenChange={setCommandOpen}>
@@ -51,30 +55,26 @@ export function CommandDialog() {
             type="text"
             placeholder="Search commands..."
             value={query}
-            onChange={( e ) => setQuery( e.target.value )}
+            onChange={(e) => setQuery(e.target.value)}
             className="flex-1 bg-transparent text-sm outline-none"
             autoFocus
           />
         </div>
         <div className="max-h-80 overflow-y-auto p-1">
-          {filtered.map( ( cmd ) => (
+          {filtered.map((cmd) => (
             <button
               key={cmd.id}
               onClick={() => {
                 cmd.action()
-                setCommandOpen( false )
-                setQuery( '' )
+                setCommandOpen(false)
+                setQuery('')
               }}
               className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-sm hover:bg-surface-elevated"
             >
               {cmd.label}
             </button>
-          ) )}
-          {filtered.length === 0 && (
-            <p className="px-2 py-4 text-center text-sm text-mute">
-              No commands found
-            </p>
-          )}
+          ))}
+          {filtered.length === 0 && <p className="px-2 py-4 text-center text-sm text-mute">No commands found</p>}
         </div>
       </DialogContent>
     </Dialog>
