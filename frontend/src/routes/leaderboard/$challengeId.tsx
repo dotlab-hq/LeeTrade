@@ -7,7 +7,7 @@ import { DataTable } from '@/components/ui/table.tsx'
 import { Button } from '@/components/ui/button.tsx'
 import { createColumnHelper } from '@tanstack/react-table'
 
-export const Route = createFileRoute('/leaderboard/$challengeId/')({
+export const Route = createFileRoute('/leaderboard/$challengeId')({
   component: ChallengeLeaderboard,
   notFoundComponent: () => <div className="page-wrap py-24 text-center text-body">Challenge not found</div>,
 })

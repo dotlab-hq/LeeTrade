@@ -1,6 +1,7 @@
 import {
   flexRender,
   useReactTable,
+  getCoreRowModel,
   getSortedRowModel,
   getPaginationRowModel
   
@@ -34,8 +35,8 @@ export function DataTable<TData, TValue>( {
   const table = useReactTable( {
     data,
     columns,
-    getCoreRowModel: getSortedRowModel,
-    getSortedRowModel: getSortedRowModel,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     onSortingChange: setSorting,
     onPaginationChange: setPagination,

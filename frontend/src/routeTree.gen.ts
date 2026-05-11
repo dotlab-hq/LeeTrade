@@ -16,9 +16,9 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as LeaderboardIndexRouteImport } from './routes/leaderboard/index'
 import { Route as ChallengesIndexRouteImport } from './routes/challenges/index'
 import { Route as AppIndexRouteImport } from './routes/app/index'
+import { Route as LeaderboardChallengeIdRouteImport } from './routes/leaderboard/$challengeId'
+import { Route as ChallengesChallengeIdRouteImport } from './routes/challenges/$challengeId'
 import { Route as AppProfileRouteImport } from './routes/app/profile'
-import { Route as LeaderboardChallengeIdIndexRouteImport } from './routes/leaderboard/$challengeId/index'
-import { Route as ChallengesChallengeIdIndexRouteImport } from './routes/challenges/$challengeId/index'
 import { Route as AppSubmissionsIndexRouteImport } from './routes/app/submissions/index'
 import { Route as AppSettingsIndexRouteImport } from './routes/app/settings/index'
 import { Route as AppReplaysIndexRouteImport } from './routes/app/replays/index'
@@ -73,23 +73,21 @@ const AppIndexRoute = AppIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppRoute,
 } as any)
+const LeaderboardChallengeIdRoute = LeaderboardChallengeIdRouteImport.update({
+  id: '/leaderboard/$challengeId',
+  path: '/leaderboard/$challengeId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ChallengesChallengeIdRoute = ChallengesChallengeIdRouteImport.update({
+  id: '/challenges/$challengeId',
+  path: '/challenges/$challengeId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AppProfileRoute = AppProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
   getParentRoute: () => AppRoute,
 } as any)
-const LeaderboardChallengeIdIndexRoute =
-  LeaderboardChallengeIdIndexRouteImport.update({
-    id: '/leaderboard/$challengeId/',
-    path: '/leaderboard/$challengeId/',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const ChallengesChallengeIdIndexRoute =
-  ChallengesChallengeIdIndexRouteImport.update({
-    id: '/challenges/$challengeId/',
-    path: '/challenges/$challengeId/',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 const AppSubmissionsIndexRoute = AppSubmissionsIndexRouteImport.update({
   id: '/submissions/',
   path: '/submissions/',
@@ -192,6 +190,8 @@ export interface FileRoutesByFullPath {
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
   '/app/profile': typeof AppProfileRouteWithChildren
+  '/challenges/$challengeId': typeof ChallengesChallengeIdRoute
+  '/leaderboard/$challengeId': typeof LeaderboardChallengeIdRoute
   '/app/': typeof AppIndexRoute
   '/challenges/': typeof ChallengesIndexRoute
   '/leaderboard/': typeof LeaderboardIndexRoute
@@ -207,8 +207,6 @@ export interface FileRoutesByFullPath {
   '/app/replays/': typeof AppReplaysIndexRoute
   '/app/settings/': typeof AppSettingsIndexRoute
   '/app/submissions/': typeof AppSubmissionsIndexRoute
-  '/challenges/$challengeId/': typeof ChallengesChallengeIdIndexRoute
-  '/leaderboard/$challengeId/': typeof LeaderboardChallengeIdIndexRoute
   '/app/admin/audit/': typeof AppAdminAuditIndexRoute
   '/app/admin/moderation/': typeof AppAdminModerationIndexRoute
   '/app/admin/review/': typeof AppAdminReviewIndexRoute
@@ -220,6 +218,8 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
+  '/challenges/$challengeId': typeof ChallengesChallengeIdRoute
+  '/leaderboard/$challengeId': typeof LeaderboardChallengeIdRoute
   '/app': typeof AppIndexRoute
   '/challenges': typeof ChallengesIndexRoute
   '/leaderboard': typeof LeaderboardIndexRoute
@@ -230,8 +230,6 @@ export interface FileRoutesByTo {
   '/app/replays': typeof AppReplaysIndexRoute
   '/app/settings': typeof AppSettingsIndexRoute
   '/app/submissions': typeof AppSubmissionsIndexRoute
-  '/challenges/$challengeId': typeof ChallengesChallengeIdIndexRoute
-  '/leaderboard/$challengeId': typeof LeaderboardChallengeIdIndexRoute
   '/app/admin/audit': typeof AppAdminAuditIndexRoute
   '/app/admin/moderation': typeof AppAdminModerationIndexRoute
   '/app/admin/review': typeof AppAdminReviewIndexRoute
@@ -246,6 +244,8 @@ export interface FileRoutesById {
   '/signin': typeof SigninRoute
   '/signup': typeof SignupRoute
   '/app/profile': typeof AppProfileRouteWithChildren
+  '/challenges/$challengeId': typeof ChallengesChallengeIdRoute
+  '/leaderboard/$challengeId': typeof LeaderboardChallengeIdRoute
   '/app/': typeof AppIndexRoute
   '/challenges/': typeof ChallengesIndexRoute
   '/leaderboard/': typeof LeaderboardIndexRoute
@@ -261,8 +261,6 @@ export interface FileRoutesById {
   '/app/replays/': typeof AppReplaysIndexRoute
   '/app/settings/': typeof AppSettingsIndexRoute
   '/app/submissions/': typeof AppSubmissionsIndexRoute
-  '/challenges/$challengeId/': typeof ChallengesChallengeIdIndexRoute
-  '/leaderboard/$challengeId/': typeof LeaderboardChallengeIdIndexRoute
   '/app/admin/audit/': typeof AppAdminAuditIndexRoute
   '/app/admin/moderation/': typeof AppAdminModerationIndexRoute
   '/app/admin/review/': typeof AppAdminReviewIndexRoute
@@ -278,6 +276,8 @@ export interface FileRouteTypes {
     | '/signin'
     | '/signup'
     | '/app/profile'
+    | '/challenges/$challengeId'
+    | '/leaderboard/$challengeId'
     | '/app/'
     | '/challenges/'
     | '/leaderboard/'
@@ -293,8 +293,6 @@ export interface FileRouteTypes {
     | '/app/replays/'
     | '/app/settings/'
     | '/app/submissions/'
-    | '/challenges/$challengeId/'
-    | '/leaderboard/$challengeId/'
     | '/app/admin/audit/'
     | '/app/admin/moderation/'
     | '/app/admin/review/'
@@ -306,6 +304,8 @@ export interface FileRouteTypes {
     | '/'
     | '/signin'
     | '/signup'
+    | '/challenges/$challengeId'
+    | '/leaderboard/$challengeId'
     | '/app'
     | '/challenges'
     | '/leaderboard'
@@ -316,8 +316,6 @@ export interface FileRouteTypes {
     | '/app/replays'
     | '/app/settings'
     | '/app/submissions'
-    | '/challenges/$challengeId'
-    | '/leaderboard/$challengeId'
     | '/app/admin/audit'
     | '/app/admin/moderation'
     | '/app/admin/review'
@@ -331,6 +329,8 @@ export interface FileRouteTypes {
     | '/signin'
     | '/signup'
     | '/app/profile'
+    | '/challenges/$challengeId'
+    | '/leaderboard/$challengeId'
     | '/app/'
     | '/challenges/'
     | '/leaderboard/'
@@ -346,8 +346,6 @@ export interface FileRouteTypes {
     | '/app/replays/'
     | '/app/settings/'
     | '/app/submissions/'
-    | '/challenges/$challengeId/'
-    | '/leaderboard/$challengeId/'
     | '/app/admin/audit/'
     | '/app/admin/moderation/'
     | '/app/admin/review/'
@@ -361,10 +359,10 @@ export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   SigninRoute: typeof SigninRoute
   SignupRoute: typeof SignupRoute
+  ChallengesChallengeIdRoute: typeof ChallengesChallengeIdRoute
+  LeaderboardChallengeIdRoute: typeof LeaderboardChallengeIdRoute
   ChallengesIndexRoute: typeof ChallengesIndexRoute
   LeaderboardIndexRoute: typeof LeaderboardIndexRoute
-  ChallengesChallengeIdIndexRoute: typeof ChallengesChallengeIdIndexRoute
-  LeaderboardChallengeIdIndexRoute: typeof LeaderboardChallengeIdIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -418,26 +416,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
     }
+    '/leaderboard/$challengeId': {
+      id: '/leaderboard/$challengeId'
+      path: '/leaderboard/$challengeId'
+      fullPath: '/leaderboard/$challengeId'
+      preLoaderRoute: typeof LeaderboardChallengeIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/challenges/$challengeId': {
+      id: '/challenges/$challengeId'
+      path: '/challenges/$challengeId'
+      fullPath: '/challenges/$challengeId'
+      preLoaderRoute: typeof ChallengesChallengeIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/app/profile': {
       id: '/app/profile'
       path: '/profile'
       fullPath: '/app/profile'
       preLoaderRoute: typeof AppProfileRouteImport
       parentRoute: typeof AppRoute
-    }
-    '/leaderboard/$challengeId/': {
-      id: '/leaderboard/$challengeId/'
-      path: '/leaderboard/$challengeId'
-      fullPath: '/leaderboard/$challengeId/'
-      preLoaderRoute: typeof LeaderboardChallengeIdIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/challenges/$challengeId/': {
-      id: '/challenges/$challengeId/'
-      path: '/challenges/$challengeId'
-      fullPath: '/challenges/$challengeId/'
-      preLoaderRoute: typeof ChallengesChallengeIdIndexRouteImport
-      parentRoute: typeof rootRouteImport
     }
     '/app/submissions/': {
       id: '/app/submissions/'
@@ -686,10 +684,10 @@ const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   SigninRoute: SigninRoute,
   SignupRoute: SignupRoute,
+  ChallengesChallengeIdRoute: ChallengesChallengeIdRoute,
+  LeaderboardChallengeIdRoute: LeaderboardChallengeIdRoute,
   ChallengesIndexRoute: ChallengesIndexRoute,
   LeaderboardIndexRoute: LeaderboardIndexRoute,
-  ChallengesChallengeIdIndexRoute: ChallengesChallengeIdIndexRoute,
-  LeaderboardChallengeIdIndexRoute: LeaderboardChallengeIdIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
