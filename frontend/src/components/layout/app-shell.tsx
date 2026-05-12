@@ -2,12 +2,15 @@ import React, { useState } from 'react'
 import { Outlet, useNavigate, useLocation } from '@tanstack/react-router'
 import { useAuthStore } from '#/lib/auth-store'
 import { Menu, X, LogOut, User, Settings, BarChart3 } from 'lucide-react'
+import { useReducedMotion } from '@/hooks/useReducedMotion'
+import { MOTION_TIMING } from '@/lib/motion'
 
 export function AppShell() {
   const { user, logout, setRole } = useAuthStore()
   const navigate = useNavigate()
   const location = useLocation()
   const [sidebarOpen, setSidebarOpen] = useState(true)
+  const prefersReducedMotion = useReducedMotion()
 
   const handleLogout = () => {
     logout()
@@ -29,7 +32,10 @@ export function AppShell() {
       <div
         className={`${
           sidebarOpen ? 'w-64' : 'w-0'
-        } bg-surface border-r border-hairline transition-all duration-300 overflow-hidden flex flex-col`}
+        } bg-surface border-r border-hairline overflow-hidden flex flex-col`}
+        style={{
+          transition: prefersReducedMotion ? 'none' : 'all 300ms cubic-bezier(0.4, 0, 0.2, 1)',
+        }}
       >
         {/* Logo */}
         <div className="p-4 border-b border-hairline">
@@ -44,12 +50,28 @@ export function AppShell() {
               <button
                 key={item.href}
                 onClick={() => navigate({ to: item.href as any })}
-                className={`w-full flex items-center gap-3 px-4 py-2 rounded-md transition-colors ${
+                className={`w-full flex items-center gap-3 px-4 py-2 rounded-md relative group overflow-hidden ${
                   isActive(item.href)
                     ? 'bg-surface-elevated text-ink'
-                    : 'text-body hover:bg-surface-elevated'
+                    : 'text-body'
                 }`}
+                style={{
+                  transition: prefersReducedMotion
+                    ? 'none'
+                    : 'background-color 200ms cubic-bezier(0.4, 0, 0.2, 1), color 200ms cubic-bezier(0.4, 0, 0.2, 1)',
+                }}
               >
+                {/* Hover background animation */}
+                {!isActive(item.href) && (
+                  <div
+                    className="absolute inset-0 bg-surface-elevated opacity-0 group-hover:opacity-100 -z-10"
+                    style={{
+                      transition: prefersReducedMotion
+                        ? 'none'
+                        : 'opacity 200ms cubic-bezier(0.4, 0, 0.2, 1)',
+                    }}
+                  />
+                )}
                 <Icon className="w-4 h-4" />
                 <span className="text-sm font-medium">{item.label}</span>
               </button>
@@ -74,8 +96,21 @@ export function AppShell() {
           </div>
           <button
             onClick={handleLogout}
-            className="w-full flex items-center gap-2 px-4 py-2 text-accent-red hover:bg-surface-elevated rounded-md transition-colors text-sm"
+            className="w-full flex items-center gap-2 px-4 py-2 text-accent-red rounded-md text-sm group relative overflow-hidden"
+            style={{
+              transition: prefersReducedMotion
+                ? 'none'
+                : 'background-color 200ms cubic-bezier(0.4, 0, 0.2, 1)',
+            }}
           >
+            <div
+              className="absolute inset-0 bg-surface-elevated opacity-0 group-hover:opacity-100 -z-10"
+              style={{
+                transition: prefersReducedMotion
+                  ? 'none'
+                  : 'opacity 200ms cubic-bezier(0.4, 0, 0.2, 1)',
+              }}
+            />
             <LogOut className="w-4 h-4" />
             <span>Logout</span>
           </button>
@@ -88,8 +123,21 @@ export function AppShell() {
         <div className="h-16 bg-surface border-b border-hairline flex items-center px-6 gap-4">
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="p-2 hover:bg-surface-elevated rounded-md transition-colors"
+            className="p-2 rounded-md group relative overflow-hidden"
+            style={{
+              transition: prefersReducedMotion
+                ? 'none'
+                : 'background-color 200ms cubic-bezier(0.4, 0, 0.2, 1)',
+            }}
           >
+            <div
+              className="absolute inset-0 bg-surface-elevated opacity-0 group-hover:opacity-100 -z-10"
+              style={{
+                transition: prefersReducedMotion
+                  ? 'none'
+                  : 'opacity 200ms cubic-bezier(0.4, 0, 0.2, 1)',
+              }}
+            />
             {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
 
@@ -99,8 +147,21 @@ export function AppShell() {
             <span className="text-sm text-body">{user?.name}</span>
             <button
               onClick={() => navigate({ to: '/app/profile' })}
-              className="p-2 hover:bg-surface-elevated rounded-md transition-colors"
+              className="p-2 rounded-md group relative overflow-hidden"
+              style={{
+                transition: prefersReducedMotion
+                  ? 'none'
+                  : 'background-color 200ms cubic-bezier(0.4, 0, 0.2, 1)',
+              }}
             >
+              <div
+                className="absolute inset-0 bg-surface-elevated opacity-0 group-hover:opacity-100 -z-10"
+                style={{
+                  transition: prefersReducedMotion
+                    ? 'none'
+                    : 'opacity 200ms cubic-bezier(0.4, 0, 0.2, 1)',
+                }}
+              />
               <Settings className="w-5 h-5 text-mute" />
             </button>
           </div>

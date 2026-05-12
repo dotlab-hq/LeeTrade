@@ -1,4 +1,5 @@
 import { cn } from '@/lib/utils.ts'
+import { useReducedMotion } from '@/hooks/useReducedMotion'
 
 export function StatsCard( {
   label,
@@ -11,8 +12,31 @@ export function StatsCard( {
   delta?: string | number
   deltaPositive?: boolean
 } ) {
+  const prefersReducedMotion = useReducedMotion()
+
   return (
-    <div className="rounded-lg border border-hairline bg-surface p-4">
+    <div
+      className="rounded-lg border border-hairline bg-surface p-4 group cursor-default"
+      style={{
+        transition: prefersReducedMotion
+          ? 'none'
+          : 'transform 200ms cubic-bezier(0.4, 0, 0.2, 1), box-shadow 200ms cubic-bezier(0.4, 0, 0.2, 1)',
+      }}
+      onMouseEnter={(e) => {
+        if (!prefersReducedMotion) {
+          const el = e.currentTarget as HTMLElement
+          el.style.transform = 'translateY(-2px)'
+          el.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)'
+        }
+      }}
+      onMouseLeave={(e) => {
+        if (!prefersReducedMotion) {
+          const el = e.currentTarget as HTMLElement
+          el.style.transform = 'translateY(0)'
+          el.style.boxShadow = 'none'
+        }
+      }}
+    >
       <p className="text-xs text-body">{label}</p>
       <p className="mt-1 text-2xl font-semibold text-ink">{value}</p>
       {delta !== undefined && (
@@ -21,6 +45,11 @@ export function StatsCard( {
             'mt-1 text-xs',
             deltaPositive ? 'text-accent-green' : 'text-accent-red'
           )}
+          style={{
+            animation: !prefersReducedMotion && deltaPositive
+              ? 'score-up 400ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards'
+              : 'none',
+          }}
         >
           {deltaPositive ? '+' : ''}
           {delta}
@@ -41,8 +70,34 @@ export function DataCard( {
   children: React.ReactNode
   className?: string
 } ) {
+  const prefersReducedMotion = useReducedMotion()
+
   return (
-    <div className={cn( 'rounded-lg border border-hairline bg-surface p-4', className )}>
+    <div
+      className={cn(
+        'rounded-lg border border-hairline bg-surface p-4 group',
+        className
+      )}
+      style={{
+        transition: prefersReducedMotion
+          ? 'none'
+          : 'transform 200ms cubic-bezier(0.4, 0, 0.2, 1), box-shadow 200ms cubic-bezier(0.4, 0, 0.2, 1)',
+      }}
+      onMouseEnter={(e) => {
+        if (!prefersReducedMotion) {
+          const el = e.currentTarget as HTMLElement
+          el.style.transform = 'translateY(-2px)'
+          el.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)'
+        }
+      }}
+      onMouseLeave={(e) => {
+        if (!prefersReducedMotion) {
+          const el = e.currentTarget as HTMLElement
+          el.style.transform = 'translateY(0)'
+          el.style.boxShadow = 'none'
+        }
+      }}
+    >
       <h3 className="mb-1 font-medium text-ink">{title}</h3>
       {description && <p className="mb-3 text-sm text-body">{description}</p>}
       {children}
@@ -73,9 +128,16 @@ export function SkeletonBlock( {
 }: {
   className?: string
 } ) {
+  const prefersReducedMotion = useReducedMotion()
+
   return (
     <div
-      className={cn( 'animate-pulse rounded-md bg-surface-elevated', className )}
+      className={cn( 'rounded-md bg-surface-elevated', className )}
+      style={{
+        animation: !prefersReducedMotion
+          ? 'pulse 1500ms cubic-bezier(0.4, 0, 0.6, 1) infinite'
+          : 'none',
+      }}
     />
   )
 }

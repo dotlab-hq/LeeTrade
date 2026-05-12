@@ -1,0 +1,455 @@
+/**
+ * Motion System - Keyframe Animations
+ * Centralized animation definitions for the application
+ */
+
+/* ============================================================================
+   Button & Interactive Elements
+   ============================================================================ */
+
+@keyframes button-hover-scale {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.02);
+  }
+}
+
+@keyframes button-active-scale {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(0.98);
+  }
+}
+
+@keyframes spinner {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ============================================================================
+   Card & Elevation Effects
+   ============================================================================ */
+
+@keyframes card-hover-lift {
+  from {
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  }
+  to {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+}
+
+@keyframes card-entrance {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============================================================================
+   List & Item Animations
+   ============================================================================ */
+
+@keyframes list-item-enter {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes list-item-hover {
+  from {
+    background-color: transparent;
+  }
+  to {
+    background-color: rgba(255, 255, 255, 0.05);
+  }
+}
+
+/* ============================================================================
+   Modal & Dialog Animations
+   ============================================================================ */
+
+@keyframes modal-enter {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes modal-exit {
+  from {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.95) translateY(-20px);
+  }
+}
+
+@keyframes backdrop-fade-in {
+  from {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+  }
+  to {
+    opacity: 1;
+    backdrop-filter: blur(4px);
+  }
+}
+
+@keyframes backdrop-fade-out {
+  from {
+    opacity: 1;
+    backdrop-filter: blur(4px);
+  }
+  to {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+  }
+}
+
+/* ============================================================================
+   Navigation & Page Transitions
+   ============================================================================ */
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes slide-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slide-out-left {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes nav-underline {
+  from {
+    width: 0;
+    left: 0;
+  }
+  to {
+    width: 100%;
+    left: 0;
+  }
+}
+
+/* ============================================================================
+   Loading & Skeleton States
+   ============================================================================ */
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+/* ============================================================================
+   Leaderboard & Score Updates
+   ============================================================================ */
+
+@keyframes rank-bump {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes score-up {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes achievement-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes color-flash {
+  0%, 100% {
+    color: inherit;
+  }
+  50% {
+    color: var(--accent-green, #59d499);
+  }
+}
+
+/* ============================================================================
+   Form & Input Animations
+   ============================================================================ */
+
+@keyframes input-focus {
+  from {
+    border-color: var(--hairline, #242728);
+    box-shadow: none;
+  }
+  to {
+    border-color: var(--accent-blue, #57c1ff);
+    box-shadow: 0 0 0 3px rgba(87, 193, 255, 0.1);
+  }
+}
+
+@keyframes input-error {
+  0%, 100% {
+    border-color: var(--accent-red, #ff6161);
+  }
+  50% {
+    border-color: var(--accent-red, #ff6161);
+  }
+}
+
+@keyframes checkbox-check {
+  0% {
+    transform: scale(0.5);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* ============================================================================
+   Stagger Animation Helpers
+   ============================================================================ */
+
+@keyframes stagger-1 {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes stagger-2 {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes stagger-3 {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ============================================================================
+   Utility Classes for Common Animations
+   ============================================================================ */
+
+.animate-button-hover {
+  animation: button-hover-scale 150ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.animate-button-active {
+  animation: button-active-scale 100ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.animate-spinner {
+  animation: spinner 800ms linear infinite;
+}
+
+.animate-card-hover {
+  animation: card-hover-lift 200ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.animate-card-enter {
+  animation: card-entrance 300ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.animate-list-item-enter {
+  animation: list-item-enter 300ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.animate-modal-enter {
+  animation: modal-enter 300ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.animate-modal-exit {
+  animation: modal-exit 200ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.animate-backdrop-in {
+  animation: backdrop-fade-in 300ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.animate-backdrop-out {
+  animation: backdrop-fade-out 200ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.animate-fade-in {
+  animation: fade-in 300ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.animate-fade-out {
+  animation: fade-out 200ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.animate-slide-in-left {
+  animation: slide-in-left 300ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.animate-slide-out-left {
+  animation: slide-out-left 200ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.animate-slide-down {
+  animation: slide-down 200ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.animate-slide-up {
+  animation: slide-up 200ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.animate-pulse {
+  animation: pulse 1500ms cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-rank-bump {
+  animation: rank-bump 400ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.animate-achievement-pop {
+  animation: achievement-pop 600ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* ============================================================================
+   Reduced Motion Preferences
+   ============================================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

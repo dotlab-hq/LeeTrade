@@ -3,9 +3,10 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { Slot } from "radix-ui"
 
 import { cn } from "@/lib/utils.ts"
+import { useReducedMotion } from "@/hooks/useReducedMotion"
 
 const buttonVariants = cva(
-  "inline-flex shrink-0 items-center justify-center gap-2 rounded-md text-sm font-medium whitespace-nowrap transition-all outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  "inline-flex shrink-0 items-center justify-center gap-2 rounded-md text-sm font-medium whitespace-nowrap outline-none focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {
@@ -43,19 +44,32 @@ function Button( {
   variant = "default",
   size = "default",
   asChild = false,
+  style,
   ...props
 }: React.ComponentProps<"button"> &
   VariantProps<typeof buttonVariants> & {
     asChild?: boolean
   } ) {
   const Comp = asChild ? Slot.Root : "button"
+  const prefersReducedMotion = useReducedMotion()
+
+  const motionStyle: React.CSSProperties = {
+    transition: prefersReducedMotion
+      ? 'none'
+      : 'all 150ms cubic-bezier(0.4, 0, 0.2, 1)',
+    ...style,
+  }
 
   return (
     <Comp
       data-slot="button"
       data-variant={variant}
       data-size={size}
-      className={cn( buttonVariants( { variant, size, className } ) )}
+      className={cn(
+        buttonVariants( { variant, size, className } ),
+        'active:scale-95 hover:scale-[1.02] enabled:hover:shadow-md'
+      )}
+      style={motionStyle}
       {...props}
     />
   )

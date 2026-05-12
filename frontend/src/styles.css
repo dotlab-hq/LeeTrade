@@ -3,10 +3,12 @@
 @plugin '@tailwindcss/typography';
 
 @import 'tw-animate-css';
+@import './styles/animations.css';
 
 @custom-variant dark (&:is(.dark *));
 
 :root {
+  /* Color Palette */
   --canvas: #07080a;
   --surface: #0d0d0d;
   --surface-elevated: #101111;
@@ -43,6 +45,20 @@
   --hero-stripe-end: #a1131a;
   --key-bg-start: #121212;
   --key-bg-end: #0d0d0d;
+
+  /* Motion Timing */
+  --motion-timing-quick: 150ms;
+  --motion-timing-standard: 300ms;
+  --motion-timing-deliberate: 400ms;
+  --motion-timing-slow: 600ms;
+  --motion-timing-infinite: 800ms;
+  --motion-timing-pulse: 1500ms;
+
+  /* Motion Easing */
+  --motion-easing-quick: cubic-bezier(0.4, 0, 0.2, 1);
+  --motion-easing-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --motion-easing-deliberate: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --motion-easing-back: cubic-bezier(0.34, 1.56, 0.64, 1);
 
   --background: var(--canvas);
   --foreground: var(--ink);
