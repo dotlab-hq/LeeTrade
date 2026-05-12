@@ -1,5 +1,4 @@
 import { create } from 'zustand'
-import { useMe } from '#/hooks/api'
 
 interface User {
   id: string
@@ -15,7 +14,7 @@ interface AuthState {
   setUser: (user: User | null) => void
   setRole: (role: User['role']) => void
   logout: () => void
-  initAuth: () => Promise<void>
+  initAuth: (sessionData: any) => void
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -38,28 +37,24 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ user: null, isAuthenticated: false })
   },
 
-  initAuth: async () => {
-    set({ isLoading: true })
+  initAuth: (sessionData) => {
     try {
-      const query = useMe()
-      const { data } = query
-      if (data?.user) {
+      if (sessionData?.user) {
         set({
           user: {
-            id: data.user.id,
-            email: data.user.email,
-            name: data.user.name || 'User',
-            role: (data.user.role as User['role']) || 'viewer',
+            id: sessionData.user.id,
+            email: sessionData.user.email,
+            name: sessionData.user.name || 'User',
+            role: (sessionData.user.role as User['role']) || 'viewer',
           },
           isAuthenticated: true,
+          isLoading: false,
         })
       } else {
-        set({ user: null, isAuthenticated: false })
+        set({ user: null, isAuthenticated: false, isLoading: false })
       }
     } catch {
-      set({ user: null, isAuthenticated: false })
-    } finally {
-      set({ isLoading: false })
+      set({ user: null, isAuthenticated: false, isLoading: false })
     }
   },
 }))
