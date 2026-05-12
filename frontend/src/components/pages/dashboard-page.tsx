@@ -1,23 +1,23 @@
 import React from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { useAuthStore } from '#/lib/auth-store'
-import { useChallenges } from '#/hooks/api'
-import { useLeaderboard } from '#/hooks/api'
-import { TrendingUp, FileText, Trophy, Plus } from 'lucide-react'
+import { useChallenges, useSubmissions } from '#/hooks/api'
+import { TrendingUp, FileText, Trophy, Plus, AlertCircle } from 'lucide-react'
 
 export function DashboardPage() {
   const navigate = useNavigate()
   const { user } = useAuthStore()
   const { data: challenges = [], isLoading: challengesLoading } = useChallenges()
-  const [challengeId, setChallengeId] = React.useState<string>('')
+  const { data: submissions = [], isLoading: submissionsLoading } = useSubmissions()
 
-  React.useEffect(() => {
-    if (challenges.length > 0 && !challengeId) {
-      setChallengeId(challenges[0].id)
-    }
-  }, [challenges, challengeId])
+  // Filter submissions by current user
+  const userSubmissions = React.useMemo(() => {
+    if (!user?.id) return []
+    return submissions.filter((sub) => sub.userId === user.id)
+  }, [submissions, user?.id])
 
-  const { data: leaderboard, isLoading: leaderboardLoading } = useLeaderboard(challengeId)
+  const completedSubmissions = userSubmissions.filter((sub) => sub.status === 'final')
+  const totalScore = userSubmissions.reduce((sum, sub) => sum + (sub.score || 0), 0)
 
   return (
     <div className="p-8 max-w-7xl mx-auto">
@@ -27,27 +27,25 @@ export function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-        <div className="bg-surface border border-hairline rounded-lg p-6 hover:bg-surface-elevated transition-colors">
+        <div className="bg-surface border border-hairline rounded-lg p-6 hover:bg-surface-elevated transition-colors cursor-default" style={{ transition: 'var(--motion-timing-standard) cubic-bezier(0.4, 0, 0.2, 1)' }}>
           <div className="flex items-start justify-between">
             <div>
               <p className="text-sm text-mute mb-2">Total Submissions</p>
-              <p className="text-3xl font-bold text-ink">{leaderboard?.entries.length || 0}</p>
+              <p className="text-3xl font-bold text-ink">{userSubmissions.length}</p>
             </div>
             <FileText className="w-5 h-5 text-accent-blue" />
           </div>
         </div>
-        <div className="bg-surface border border-hairline rounded-lg p-6 hover:bg-surface-elevated transition-colors">
+        <div className="bg-surface border border-hairline rounded-lg p-6 hover:bg-surface-elevated transition-colors cursor-default" style={{ transition: 'var(--motion-timing-standard) cubic-bezier(0.4, 0, 0.2, 1)' }}>
           <div className="flex items-start justify-between">
             <div>
               <p className="text-sm text-mute mb-2">Completed</p>
-              <p className="text-3xl font-bold text-ink">
-                {leaderboard?.entries.filter((e) => e.status === 'final').length || 0}
-              </p>
+              <p className="text-3xl font-bold text-ink">{completedSubmissions.length}</p>
             </div>
             <TrendingUp className="w-5 h-5 text-accent-green" />
           </div>
         </div>
-        <div className="bg-surface border border-hairline rounded-lg p-6 hover:bg-surface-elevated transition-colors">
+        <div className="bg-surface border border-hairline rounded-lg p-6 hover:bg-surface-elevated transition-colors cursor-default" style={{ transition: 'var(--motion-timing-standard) cubic-bezier(0.4, 0, 0.2, 1)' }}>
           <div className="flex items-start justify-between">
             <div>
               <p className="text-sm text-mute mb-2">Available Challenges</p>
@@ -73,12 +71,14 @@ export function DashboardPage() {
           </button>
         </div>
 
-        {leaderboardLoading ? (
+        {submissionsLoading ? (
           <div className="bg-surface border border-hairline rounded-lg p-12 text-center">
+            <div className="inline-block animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-accent-blue mb-4"></div>
             <p className="text-mute">Loading submissions...</p>
           </div>
-        ) : leaderboard?.entries.length === 0 ? (
+        ) : userSubmissions.length === 0 ? (
           <div className="bg-surface border border-hairline rounded-lg p-12 text-center">
+            <AlertCircle className="w-12 h-12 text-mute mx-auto mb-4 opacity-50" />
             <p className="text-mute mb-4">No submissions yet</p>
             <button
               onClick={() => navigate({ to: '/app/submissions/new' })}
@@ -89,32 +89,36 @@ export function DashboardPage() {
           </div>
         ) : (
           <div className="space-y-3">
-            {leaderboard?.entries.slice(0, 5).map((entry) => (
+            {userSubmissions.slice(0, 5).map((submission, index) => (
               <div
-                key={entry.submissionId}
-                onClick={() => navigate({ to: `/app/submissions/${entry.submissionId}` })}
-                className="bg-surface border border-hairline rounded-lg p-4 hover:bg-surface-elevated cursor-pointer transition-colors"
+                key={submission.id}
+                onClick={() => navigate({ to: `/app/submissions/${submission.id}` })}
+                className="bg-surface border border-hairline rounded-lg p-4 hover:bg-surface-elevated cursor-pointer transition-colors group"
+                style={{
+                  animation: !submissionsLoading ? `list-item-enter 300ms cubic-bezier(0.4, 0, 0.2, 1) forwards` : 'none',
+                  animationDelay: !submissionsLoading ? `${index * 50}ms` : '0ms',
+                }}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
-                    <p className="font-medium text-ink">Team Submission</p>
+                    <p className="font-medium text-ink">{submission.challengeId ? `Challenge ${submission.challengeId.slice(0, 8)}...` : 'Submission'}</p>
                     <div className="flex items-center gap-3 mt-2">
-                      <span className="text-xs px-2 py-1 rounded bg-surface-card text-mute">source</span>
+                      <span className="text-xs px-2 py-1 rounded bg-surface-card text-mute capitalize">{submission.language || 'source'}</span>
                       <span
                         className={`text-xs px-2 py-1 rounded font-medium ${
-                          entry.status === 'final'
+                          submission.status === 'final'
                             ? 'bg-accent-green-soft text-accent-green'
-                            : entry.status === 'live'
+                            : submission.status === 'live'
                               ? 'bg-accent-blue-soft text-accent-blue'
                               : 'bg-surface-card text-mute'
                         }`}
                       >
-                        {entry.status}
+                        {submission.status || 'pending'}
                       </span>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-2xl font-bold text-ink">{entry.score.toFixed(1)}</p>
+                    <p className="text-2xl font-bold text-ink">{(submission.score || 0).toFixed(1)}</p>
                     <p className="text-xs text-mute">Score</p>
                   </div>
                 </div>

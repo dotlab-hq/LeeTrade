@@ -4,11 +4,14 @@ import { useChallenges, useLeaderboard } from '#/hooks/api'
 import { TopNav } from '@/components/ui/app-shell.tsx'
 import Footer from '@/components/ui/footer'
 import { TrendingUp, TrendingDown } from 'lucide-react'
+import { useReducedMotion } from '@/hooks/useReducedMotion'
+import { StaggerMotionWrapper } from '@/components/ui/motion-wrapper'
 
 export function GlobalLeaderboardPage() {
   const navigate = useNavigate()
   const { data: challenges = [], isLoading: challengesLoading } = useChallenges()
   const [selectedChallenge, setSelectedChallenge] = useState( '' )
+  const prefersReducedMotion = useReducedMotion()
 
   useEffect( () => {
     if ( challenges.length > 0 && !selectedChallenge ) {
@@ -79,20 +82,73 @@ export function GlobalLeaderboardPage() {
               {leaderboard.entries.map( ( entry, i ) => (
                 <tr
                   key={entry.submissionId}
-                  className="hover:bg-surface-elevated transition-colors cursor-pointer"
+                  className="group relative cursor-pointer"
                   onClick={() => navigate( { to: `/app/submissions/${entry.submissionId}` } )}
+                  style={{
+                    transition: prefersReducedMotion
+                      ? 'none'
+                      : 'background-color 200ms cubic-bezier(0.4, 0, 0.2, 1)',
+                    animation: !prefersReducedMotion 
+                      ? `list-item-enter 300ms cubic-bezier(0.4, 0, 0.2, 1) forwards`
+                      : 'none',
+                    animationDelay: !prefersReducedMotion ? `${i * 50}ms` : '0ms',
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!prefersReducedMotion) {
+                      const el = e.currentTarget as HTMLElement
+                      el.style.backgroundColor = 'rgba(16, 17, 17, 0.6)'
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!prefersReducedMotion) {
+                      const el = e.currentTarget as HTMLElement
+                      el.style.backgroundColor = 'transparent'
+                    }
+                  }}
                 >
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">
-                      <span className="text-lg font-bold text-ink">#{entry.rank}</span>
-                      {i < 3 && <span className="text-lg">{i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉'}</span>}
+                      <span 
+                        className="text-lg font-bold text-ink"
+                        style={{
+                          animation: !prefersReducedMotion && i < 3
+                            ? `rank-bump 400ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards`
+                            : 'none',
+                          transformOrigin: 'center',
+                        }}
+                      >
+                        #{entry.rank}
+                      </span>
+                      {i < 3 && (
+                        <span 
+                          className="text-lg"
+                          style={{
+                            animation: !prefersReducedMotion
+                              ? `achievement-pop 600ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards`
+                              : 'none',
+                            animationDelay: !prefersReducedMotion ? '100ms' : '0ms',
+                          }}
+                        >
+                          {i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉'}
+                        </span>
+                      )}
                     </div>
                   </td>
                   <td className="px-6 py-4">
                     <p className="font-medium text-ink">Team {entry.teamId.slice( 0, 8 )}</p>
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <p className="font-bold text-ink text-lg">{( entry.score ?? 0 ).toFixed( 1 )}</p>
+                    <p 
+                      className="font-bold text-ink text-lg"
+                      style={{
+                        animation: !prefersReducedMotion
+                          ? `score-up 400ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards`
+                          : 'none',
+                        animationDelay: !prefersReducedMotion ? '150ms' : '0ms',
+                      }}
+                    >
+                      {( entry.score ?? 0 ).toFixed( 1 )}
+                    </p>
                   </td>
                   <td className="px-6 py-4 text-right">
                     <p className="text-sm text-body">{( entry.latencyScore ?? 0 ).toFixed( 1 )}</p>
@@ -105,12 +161,17 @@ export function GlobalLeaderboardPage() {
                   </td>
                   <td className="px-6 py-4 text-right">
                     <span
-                      className={`text-xs px-2 py-1 rounded font-medium ${entry.status === 'final'
+                      className={`text-xs px-2 py-1 rounded font-medium transition-all ${entry.status === 'final'
                           ? 'bg-accent-green-soft text-accent-green'
                           : entry.status === 'live'
                             ? 'bg-accent-blue-soft text-accent-blue'
                             : 'bg-surface-card text-mute'
                         }`}
+                      style={{
+                        transition: prefersReducedMotion
+                          ? 'none'
+                          : 'background-color 200ms cubic-bezier(0.4, 0, 0.2, 1), color 200ms cubic-bezier(0.4, 0, 0.2, 1)',
+                      }}
                     >
                       {entry.status}
                     </span>

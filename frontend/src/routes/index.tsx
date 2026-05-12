@@ -1,10 +1,13 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { ArrowRight, Trophy, BarChart3, Code2, Zap, Shield } from 'lucide-react'
 import { Button } from '@/components/ui/button.tsx'
+import { useAuthStore } from '@/lib/auth-store'
 
 export const Route = createFileRoute('/')({ component: Landing })
 
 function Landing() {
+  const { user, isAuthenticated, isLoading } = useAuthStore()
+
   return (
     <div className="min-h-screen bg-canvas">
       <header className="sticky top-0 z-40 border-b border-hairline bg-canvas/90 backdrop-blur-md">
@@ -15,10 +18,25 @@ function Landing() {
             <Link to="/leaderboard" className="text-sm text-body hover:text-on-dark">Leaderboard</Link>
           </nav>
           <div className="flex items-center gap-3">
-            <Button asChild variant="ghost" size="sm" className="text-body">
-              <Link to="/signin">Sign In</Link>
-            </Button>
-            <Button size="sm" className="bg-primary text-on-primary hover:bg-primary/90">Get Started</Button>
+            {isLoading ? (
+              <div className="h-8 w-20 bg-surface-card animate-pulse rounded-md" />
+            ) : isAuthenticated && user ? (
+              <>
+                <span className="text-sm text-body hidden sm:inline">Welcome, {user.name}</span>
+                <Button asChild size="sm" className="bg-primary text-on-primary hover:bg-primary/90">
+                  <Link to="/app">Dashboard</Link>
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button asChild variant="ghost" size="sm" className="text-body">
+                  <Link to="/signin">Sign In</Link>
+                </Button>
+                <Button asChild size="sm" className="bg-primary text-on-primary hover:bg-primary/90">
+                  <Link to="/signup">Get Started</Link>
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </header>
